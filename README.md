@@ -38,4 +38,4 @@ Kube-proxy –
 Kube-proxy run on each node and, it’s a network proxy, implementing part of the Kubernetes service concept.
 It maintains the network rules on the nodes. These network rules allow network communication to your pods from network session inside or outside of your cluster.
 
-
+Animesh
