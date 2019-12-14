@@ -1,0 +1,17 @@
+#Clusterip IS DEFAULT TYPE OF SERVICE.SO YOU DIDN'T SPECIFY IT WILL WILL TAKE IT BY DEFAULT.
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+  name: myapp-service
+
+spec:
+  type: ClusterIP
+  ports:
+  - targetPort: 80
+    port: 80
+
+  selector:
+    app: myapp

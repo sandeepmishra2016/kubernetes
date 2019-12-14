@@ -1,0 +1,46 @@
+# deployment definition file structure is same as replica set definition file .
+
+## Deployment Strategy --
+#Recreate (destroy and create new) and Rolling update(default)
+
+
+#kubectl get all
+#kubectl rollout status deployment/myapp-deployment
+#kubectl rollout history deployment/myapp-deployment
+# kubectl apply -f file.yml
+# kubectl describe deploy
+
+#kubectl get deployments
+#kubectl set image deployment/myapp-deployment nginx=nginx:1.9.0
+
+#kubectl rollout undo deployment/myapp-deployment
+
+#service-NodePort file can be used for service setup
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: mywebsite
+    tier: frontend
+spec:
+  replicas: 4
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+
+  selector:
+    matchLabels:
+      app: myapp
+
+
+
+
+
