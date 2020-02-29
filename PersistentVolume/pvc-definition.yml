@@ -1,6 +1,7 @@
 
 #kubectl get pvc
-#when persistent volume is protected. You should be able to cross verify this otherwise you will not  be able delete it .
+#when persistent volume is protected. You should be able to cross verify this otherwise,
+#you will not  be able delete it .
 #
 #Command:
 #

@@ -1,0 +1,42 @@
+#Create a new deployment named 'red' with the NGINX image and 3 replicas, and ensure it gets placed on the master node only.
+#Use the label - node-role.kubernetes.io/master - set on the master node.
+#Name: red
+#Replicas: 3
+#Image: nginx
+#NodeAffinity: requiredDuringSchedulingIgnoredDuringExecution
+#Key: node-role.kubernetes.io/master
+#Use the right operator
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: red
+  labels:
+    color: red
+
+spec:
+  replicas: 3
+  template:
+    metadata:
+      name: red
+      labels:
+        color: red
+    spec:
+      containers:
+        - name: red
+          image: nginx
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-role.kubernetes.io/master
+                  operator: Exists
+
+
+  selector:
+    matchLabels:
+      color: red
+

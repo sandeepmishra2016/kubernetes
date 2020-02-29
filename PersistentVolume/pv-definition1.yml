@@ -1,13 +1,25 @@
-#kubectl get pv
-
+#kubectl get pv,pvc
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
   name: pv-log
 spec:
   accessModes:
-    - ReadWriteMany
+  - ReadWriteMany
   capacity:
     storage: 100Mi
   hostPath:
     path: /pv/log
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: claim-log-1
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 50Mi
+

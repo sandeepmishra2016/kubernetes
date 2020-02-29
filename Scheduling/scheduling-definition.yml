@@ -1,0 +1,32 @@
+
+
+IF schedulr is not working/present then
+
+we can manually assign the node to pod by using nodeName in pod-defintion file under spec.
+
+but what if running pod is in pending state you need to assign the node to them then nodeName object ,will not used as K* will not accept that change in spec
+so in that sistuation we'll create the pod-binding defintion file where we'll bind the pod with the node as we want .
+
+apiVersion: v1
+kind: Binding
+metadata:
+  name: nginx
+target:
+  apiVersion: v1
+  kind: Node
+  name: node02
+
+
+
+### OR try below
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+  nodeName: node01     #by doing this we're forcing it to run on node01

@@ -1,0 +1,239 @@
+
+
+#======================================================================================================================
+
+
+#Deploy a pod named nginx-pod using the nginx:alpine image.
+#Name: nginx-pod
+#Image: nginx:alpine
+
+kubectl run --generator=run-pod/v1 nginx-pod --image=nginx:alpine
+
+
+#======================================================================================================================
+
+
+#Deploy a redis pod using the redis:alpine image with the labels set to tier=db.
+#Pod Name: redis
+#Image: redis:alpine
+#Labels: tier=db
+
+kubectl run --generator=run-pod/v1 redis --image=redis:alpine -l tier=db
+
+
+
+#======================================================================================================================
+
+
+#Create a service redis-service to expose the redis application within the cluster on port 6379.
+#Service: redis-service
+Port: 6379
+Type: ClusterIp
+Selector: tier=db
+
+kubectl expose pod redis --port=6379 --name redis-service
+
+
+#======================================================================================================================
+
+
+#Create a deployment named webapp using the image kodekloud/webapp-color with 3 replicas
+#Name: webapp
+Image: kodekloud/webapp-color
+Replicas: 3
+
+kubectl create deployment webapp --image=kodekloud/webapp-color
+then scale it to 3
+kubectl scale deployment/webapp --replicas=3
+
+
+#======================================================================================================================
+
+#Expose the webapp as service webapp-service application on port 30082 on the nodes on the cluster
+#The web application listens on port 8080
+#Name: webapp-service
+Type: NodePort
+Endpoints: 3
+Port: 8080
+NodePort: 30082
+
+
+kubectl expose deployment webapp --type=NodePort --port=8080 --name=webapp-service --dry-run -o yaml > webapp-service.yaml
+Then edit the nodeport in it and create a service.
+
+#======================================================================================================================
+
+#We have deployed a number of PODs. They are labelled with 'tier', 'env' and 'bu'. How many PODs exist in the 'dev' environment?
+Use selectors to filter the output
+
+kubectl get pods --selector env=dev
+
+#======================================================================================================================
+
+
+#How many PODs are in the 'finance' business unit ('bu')?
+
+kubectl get pods --selector bu=finance
+
+#======================================================================================================================
+
+
+#How many objects are in the 'prod' environment including PODs, ReplicaSets and any other objects?
+
+kubectl get all --selector env=prod
+
+
+#======================================================================================================================
+
+#Create a taint on node01 with key of 'spray', value of 'mortein' and effect of 'NoSchedule'
+
+kubectl taint nodes node01 spray=mortein:NoSchedule
+
+#======================================================================================================================
+
+
+#Apply a label color=blue to node node01
+
+kubectl label node node01 color=blue
+
+#======================================================================================================================
+
+
+#On how many nodes are the pods scheduled by the DaemonSet kube-proxy
+
+kubectl describe daemonset kube-proxy --namespace=kube-system
+
+#======================================================================================================================
+
+
+#Upgrade the master components to v1.12.0
+
+Upgrade kubeadm tool, then master components, and finally the kubelet.
+Practice referring to the kubernetes documentation page.
+Note: While upgrading kubelet, if you hit dependency issue while running the apt-get upgrade kubelet command,
+use the apt install kubelet=1.12.0-00 command instead.
+
+
+
+   14  apt-get update -y
+   15  apt install kubeadm=1.12.0-00
+   16  kubeadm upgrade apply v1.12.0
+   17  kubeadm version
+   18  apt install kubelet=1.12.0-00
+   21  kubectl get nodes
+   22  systemctl restart kubelet.service
+
+#======================================================================================================================
+
+#Upgrade the worker node to v1.12.0
+Worker Node Upgraded to v1.12.0
+
+
+
+apt install kubeadm=1.12.0-00
+apt install kubelet=1.12.0-00
+kubeadm upgrade node config --kubelet-version $(kubelet --version | cut -d ' ' -f 2)
+
+
+#======================================================================================================================
+
+#At what address do you reach the ETCD cluster from your master node?
+Check the ETCD Service configuration in the ETCD POD
+
+Use the command
+kubectl describe pod etcd-master -n kube-system and look for --listen-client-urls
+
+ - --listen-client-urls=https://127.0.0.1:2379,https://172.17.0.24:2379
+
+
+
+#Where is the ETCD server certificate file located?
+#Note this path down as you will need to use it later
+
+kubectl describe pod etcd-master -n kube-system
+
+--cert-file=/etc/kubernetes/pki/etcd/server.crt
+--trusted-ca-file=/etc/kubernetes/pki/etcd/ca.crt
+
+
+#======================================================================================================================
+
+#The master nodes in our cluster are planned for a regular maintenance reboot tonight. While we do not anticipate anything to go wrong, we are required to take the necessary backups.
+Take a snapshot of the ETCD database using the built-in snapshot functionality.
+Store the backup file at location /tmp/snapshot-pre-boot.db
+Backup ETCD to /tmp/snapshot-pre-boot.db
+Name: ingress-space
+
+If etcdctl is not present,then have it and the run the below cmd
+
+
+master $ etcdctl member list
+will give you the endpoint
+
+master $ ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 \
+--cacert=/etc/kubernetes/pki/etcd/ca.crt \
+--cert=/etc/kubernetes/pki/etcd/server.crt \
+--key=/etc/kubernetes/pki/etcd/server.key \
+snapshot save /tmp/snapshot-pre-boot.db
+Snapshot saved at /tmp/snapshot-pre-boot.db
+
+#======================================================================================================================
+
+#Restore the original state of the cluster using the backup file.
+
+ETCDCTL_API=3 etcdctl --endpoints=https://[127.0.0.1]:2379 --cacert=/etc/kubernetes/pki/etcd/ca.crt \
+     --name=master \
+     --cert=/etc/kubernetes/pki/etcd/server.crt --key=/etc/kubernetes/pki/etcd/server.key \
+     --data-dir /var/lib/etcd-from-backup \
+     --initial-cluster=master=https://127.0.0.1:2380 \
+     --initial-cluster-token etcd-cluster-1 \
+     --initial-advertise-peer-urls=https://127.0.0.1:2380 \
+     snapshot restore /tmp/snapshot-pre-boot.db
+
+#======================================================================================================================
+
+#I would like to use the dev-user to access test-cluster-1.
+Set the current context to the right one so I can do that.
+
+Once the right context is identified,
+use the 'kubectl config use-context' command.
+
+#======================================================================================================================
+
+#With the current-context set to research, we are trying to access the cluster. However something seems to be wrong. Identify and fix the issue.
+
+
+Try running the kubectl get pods command and look for the error. All users certificates are stored at /etc/kubernetes/pki/users
+
+
+We were getting the error as below,
+master $ kubectl get po
+error: unable to read client-cert /etc/kubernetes/pki/users/dev-user/developer-user.crt for dev-user due to open /etc/kubernetes/pki/users/dev-user/developer-user.crt: no such file or directory
+
+#======================================================================================================================
+
+Inspect the environment and identify the authorization modes configured on the cluster.
+Check the kube-api server settings
+
+kubectl -n kube-system describe pods kube-apiserver-master
+
+look for authorization mode under command for apiserver
+
+#======================================================================================================================
+
+A user dev-user is created. User's details have been added to the kubeconfig file. Inspect the permissions granted to the user. Check if the user can list pods in the default namespace.
+
+
+Use the --as dev-user option with kubectl to run commands as the dev-user
+
+kubectl get po --as dev-user
+
+#======================================================================================================================
+The dev-user is trying to get details about the dark-blue-app pod in the blue namespace.
+Investigate and fix the issue.
+We have created the required roles and rolebindings, but something seems to be wrong.
+
+
+
+
+

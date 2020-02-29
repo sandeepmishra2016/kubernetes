@@ -1,0 +1,28 @@
+#Grant permission to list nodes
+#A new user michelle joined the team. She will be focusing on the nodes in the cluster. Create the required ClusterRoles and ClusterRoleBindings so she gets access to the nodes.
+#
+#
+#The kubeconfig file has been configured with her credentials.
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: michelle
+rules:
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["list","get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: michelle
+subjects:
+- kind: User
+  name: michelle # Name is case sensitive
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: michelle
+  apiGroup: rbac.authorization.k8s.io

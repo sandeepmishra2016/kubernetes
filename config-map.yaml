@@ -1,0 +1,38 @@
+#kubectl get cm
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+data:
+  APP_COLOR: blue
+  APP_MODE: prod
+
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: webapp-config-map
+data:
+  APP_COLOR: darkblue
+
+
+---
+#pod
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2019-12-29T21:18:08Z"
+  labels:
+    name: webapp-color
+  name: webapp-color
+  namespace: default
+spec:
+  containers:
+  - name: Webapp-color
+    image: kodekloud/webapp-color
+    envFrom:
+      - configMapRef:
+           name: webapp-config-map

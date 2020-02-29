@@ -1,0 +1,16 @@
+
+#Create another pod named 'bee' with the NGINX image, which has a toleration set to the taint Mortein
+#When you use kubeadm to build a cluster with master and minion nodes, the master is tainted in order to prevent the cluster from scheduling pods on the master.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+  tolerations:
+    - key: "spray"
+      value: "mortein"
+      operator: "Equal"
+      effect: "NoSchedule"

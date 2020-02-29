@@ -1,0 +1,126 @@
+#we need to configure ingress as
+#Deployment
+#Service
+#ConfigMap
+#Auth
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+  creationTimestamp: "2020-01-18T19:18:10Z"
+  generation: 1
+  name: nginx-ingress-controller
+  namespace: ingress-space
+  resourceVersion: "677"
+  selfLink: /apis/apps/v1/namespaces/ingress-space/deployments/nginx-ingress-controller
+  uid: f1cddf0c-92e0-4b91-bee0-d8db153cdd66
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: nginx-ingress
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        name: nginx-ingress
+    spec:
+      containers:
+      - args:
+        - /nginx-ingress-controller
+        - --configmap=$(POD_NAMESPACE)/nginx-configuration
+        - --default-backend-service=app-space/default-http-backend
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.21.0
+        imagePullPolicy: IfNotPresent
+        name: nginx-ingress-controller
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-configuration
+  namespace: ingress-space
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  creationTimestamp: "2020-01-18T19:18:11Z"
+  labels:
+    app.kubernetes.io/name: ingress-nginx
+    app.kubernetes.io/part-of: ingress-nginx
+  name: nginx-ingress-serviceaccount
+  namespace: ingress-space
+  resourceVersion: "553"
+  selfLink: /api/v1/namespaces/ingress-space/serviceaccounts/nginx-ingress-serviceaccount
+  uid: decf43fc-9a8a-40b3-976e-44658874faef
+secrets:
+- name: nginx-ingress-serviceaccount-token-47n94
+
+---
+
+role
+
+---
+rolbining
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: "2020-01-18T19:18:11Z"
+  name: ingress-service
+  namespace: ingress-space
+  resourceVersion: "546"
+  selfLink: /api/v1/namespaces/ingress-space/services/ingress-service
+  uid: 6971ae49-2e39-441a-9766-34af7185ec72
+spec:
+  clusterIP: 10.98.13.199
+  externalTrafficPolicy: Cluster
+  ports:
+  - name: http
+    nodePort: 30080
+    port: 80
+    protocol: TCP
+    targetPort: 80
+  - name: https
+    nodePort: 32583
+    port: 443
+    protocol: TCP
+    targetPort: 443
+  selector:
+    name: nginx-ingress
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}
+
+---
+

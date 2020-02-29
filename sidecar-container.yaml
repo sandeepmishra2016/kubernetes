@@ -1,0 +1,42 @@
+#Edit the pod to add a sidecar container to send logs to ElasticSearch. Mount the log volume to the sidecar container..
+#Only add a new container. Do not modify anything else. Use the spec on the right.
+
+#Name: app
+#Container Name: sidecar
+#Container Image: kodekloud/filebeat-configured
+#Volume Mount: log-volume
+#Mount Path: /var/log/event-simulator/
+#Existing Container Name: app
+#Existing Container Image: kodekloud/event-simulator
+
+#Note
+#Host path: The directory in your node.
+#Mount path: The directory in your pod.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: app
+  namespace: elastic-stack
+  labels:
+    name: app
+spec:
+  containers:
+  - name: app
+    image: kodekloud/event-simulator
+    volumeMounts:
+    - mountPath: /log
+      name: log-volume
+
+  - name: sidecar
+    image: kodekloud/filebeat-configured
+    volumeMounts:
+    - mountPath: /var/log/event-simulator/
+      name: log-volume
+
+  volumes:
+  - name: log-volume
+    hostPath:
+      # directory location on host
+      path: /var/log/webapp
+      # this field is optional
+      type: DirectoryOrCreate
